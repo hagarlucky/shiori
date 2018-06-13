@@ -6,6 +6,7 @@ sample.txt
 *.toml
 
 # Exclude generated file
+main
 shiori*
 *.db
 thumb/
