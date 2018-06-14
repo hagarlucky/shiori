@@ -13,11 +13,11 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	dt "github.com/RadhiFadlillah/shiori/database"
-	"github.com/RadhiFadlillah/shiori/model"
-	"github.com/RadhiFadlillah/shiori/readability"
 	valid "github.com/asaskevich/govalidator"
 	"github.com/gosuri/uiprogress"
+	dt "github.com/hagarlucky/shiori/database"
+	"github.com/hagarlucky/shiori/model"
+	"github.com/hagarlucky/shiori/readability"
 	"github.com/spf13/cobra"
 )
 

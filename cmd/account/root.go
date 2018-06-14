@@ -1,8 +1,8 @@
 package account
 
 import (
-	dt "github.com/RadhiFadlillah/shiori/database"
 	"github.com/fatih/color"
+	dt "github.com/hagarlucky/shiori/database"
 	"github.com/spf13/cobra"
 )
 
