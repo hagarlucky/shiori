@@ -11,6 +11,7 @@ type Tag struct {
 // Bookmark is record of a specified URL
 type Bookmark struct {
 	ID          int    `db:"id"            json:"id"`
+	UID         int    `db:"uid"           json:"uid"`
 	URL         string `db:"url"           json:"url"`
 	Title       string `db:"title"         json:"title"`
 	ImageURL    string `db:"image_url"     json:"imageURL"`

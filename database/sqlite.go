@@ -44,6 +44,7 @@ func OpenSQLiteDatabase(databasePath string) (*SQLiteDatabase, error) {
 
 	tx.MustExec(`CREATE TABLE IF NOT EXISTS bookmark(
 		id INTEGER NOT NULL,
+		uid INTEGER NOT NULL,
 		url TEXT NOT NULL,
 		title TEXT NOT NULL,
 		image_url TEXT NOT NULL DEFAULT "",
@@ -53,7 +54,8 @@ func OpenSQLiteDatabase(databasePath string) (*SQLiteDatabase, error) {
 		max_read_time INTEGER NOT NULL DEFAULT 0,
 		modified TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		CONSTRAINT bookmark_PK PRIMARY KEY(id),
-		CONSTRAINT bookmark_url_UNIQUE UNIQUE(url))`)
+		CONSTRAINT bookmark_url_UNIQUE UNIQUE(url),
+		FOREIGN KEY (uid) REFERENCES account(id))`)
 
 	tx.MustExec(`CREATE TABLE IF NOT EXISTS tag(
 		id INTEGER NOT NULL,
@@ -118,10 +120,11 @@ func (db *SQLiteDatabase) InsertBookmark(bookmark model.Bookmark) (bookmarkID in
 
 	// Save article to database
 	tx.MustExec(`INSERT INTO bookmark (
-		id, url, title, image_url, excerpt, author,
+		id, uid, url, title, image_url, excerpt, author,
 		min_read_time, max_read_time, modified)
-		VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		bookmark.ID,
+		bookmark.UID,
 		bookmark.URL,
 		bookmark.Title,
 		bookmark.ImageURL,
