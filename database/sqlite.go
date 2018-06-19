@@ -44,7 +44,7 @@ func OpenSQLiteDatabase(databasePath string) (*SQLiteDatabase, error) {
 
 	tx.MustExec(`CREATE TABLE IF NOT EXISTS bookmark(
 		id INTEGER NOT NULL,
-		uid INTEGER NOT NULL,
+		uid INTEGER NOT NULL DEFAULT 0,
 		url TEXT NOT NULL,
 		title TEXT NOT NULL,
 		image_url TEXT NOT NULL DEFAULT "",

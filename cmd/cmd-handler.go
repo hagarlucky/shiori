@@ -52,7 +52,7 @@ func (h *cmdHandler) addBookmark(cmd *cobra.Command, args []string) {
 		URL:     parsedURL.String(),
 		Title:   normalizeSpace(title),
 		Excerpt: normalizeSpace(excerpt),
-		UID:     1,
+		UID:     0,
 	}
 
 	// Get new bookmark id
