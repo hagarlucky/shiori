@@ -33,7 +33,7 @@
                 </a>
             </yla-tooltip>
             <yla-tooltip placement="right" content="Add new bookmark">
-                <a :href="bookmarklet" @click="showDialogAdd" v-show="!editMode && !loading">
+                <a @click="showDialogAdd" v-show="!editMode && !loading">
                     <span>+Shiori</span>
                     <i class="fas fa-plus fa-fw"></i>
                 </a>
@@ -49,6 +49,11 @@
                 </a>
             </yla-tooltip>
             <div class="spacer"></div>
+            <yla-tooltip placement="right" content="About">
+                <a @click="showDialogAbout">
+                    <i class="fas fa-fw fa-info-circle"></i>
+                </a>
+            </yla-tooltip>
             <yla-tooltip placement="right" content="Options">
                 <a @click="showDialogOptions">
                     <i class="fas fa-fw fa-cog"></i>
@@ -108,7 +113,7 @@
                 </div>
                 <div class="bookmark" v-for="(book, idx) in visibleBookmarks" :class="{selected: isSelected(idx)}">
                     <a class="bookmark-selector" v-if="editMode" @click="toggleSelection(idx)"></a>
-                    <a class="bookmark-link" :href="book.hasContent ? '/bookmark/'+book.id : null" :title="book.hasContent ? 'View cache' : null" target="_blank">
+                    <a class="bookmark-link" :href="getBookLink(book, true)" :title="getBookLinkTitle(book, true)" target="_blank">
                         <img v-if="book.imageURL !== ''" :src="book.imageURL">
                         <p class="title">{{book.title}}</p>
                         <p class="excerpt" v-if="book.imageURL === ''">{{book.excerpt}}</p>
@@ -119,7 +124,7 @@
                     </div>
                     <div class="spacer"></div>
                     <div class="bookmark-menu">
-                        <a class="url" title="View original" :href="book.url" target="_blank">
+                        <a class="url" :href="getBookLink(book, false)" :title="getBookLinkTitle(book, false)" target="_blank">
                             {{getHostname(book.url)}}
                         </a>
                         <a title="Edit bookmark" @click="showDialogEdit(idx)">
@@ -156,6 +161,17 @@
                 <div id="grid-padding"></div>
             </div>
         </div>
+        <yla-dialog id="dialog-about" v-bind="dialogAbout">
+            <p>
+                Shiori is a simple bookmarks manager written in Go language, developed by
+                <a target="_blank" href="https://github.com/RadhiFadlillah">Radhi Fadlillah</a> and other
+                <a target="_blank" href="https://github.com/RadhiFadlillah/shiori/graphs/contributors">contributors</a>. The source code is available on
+                <a target="_blank" href="https://github.com/RadhiFadlillah/shiori">GitHub</a> and released under MIT license.
+            </p>
+            <p>For ease of use, you can install the Shiori Bookmarklet by dragging this link (
+                <a :href="bookmarklet" onclick="event.preventDefault()">+Shiori</a>) to your bookmark bar.
+            </p>
+        </yla-dialog>
         <yla-dialog id="dialog-tags" v-bind="dialogTags">
             <a v-for="tag in tags" @click="filterTag(tag.name)">
                 <span>{{tag.name}}</span>
@@ -171,6 +187,9 @@
             </a>
             <a @click="toggleBookmarkID">
                 <i class="fa-fw" :class="options.showBookmarkID ? 'fas fa-check-square' : 'far fa-square'"></i>Show bookmark's ID
+            </a>
+            <a @click="toggleBookmarkMainLink">
+                <i class="fa-fw" :class="options.mainOpenOriginal ? 'fas fa-check-square' : 'far fa-square'"></i>Bookmark's title open original webpage instead of the cache
             </a>
         </yla-dialog>
         <yla-dialog v-bind="dialog"></yla-dialog>
@@ -208,6 +227,14 @@
                         listView: false,
                         nightMode: false,
                         showBookmarkID: false,
+                        mainOpenOriginal: false,
+                    },
+                    dialogAbout: {
+                        visible: false,
+                        title: 'About',
+                        mainClick: () => {
+                            this.dialogAbout.visible = false;
+                        },
                     },
                     dialogTags: {
                         visible: false,
@@ -317,6 +344,10 @@
                     this.options.showBookmarkID = !this.options.showBookmarkID;
                     localStorage.setItem('shiori-show-id', this.options.showBookmarkID ? '1' : '0');
                 },
+                toggleBookmarkMainLink() {
+                    this.options.mainOpenOriginal = !this.options.mainOpenOriginal;
+                    localStorage.setItem('shiori-main-original', this.options.mainOpenOriginal ? '1' : '0');
+                },
                 toggleEditMode() {
                     this.editMode = !this.editMode;
                     this.selected = [];
@@ -349,8 +380,7 @@
                     this.dialogTags.visible = false;
                     this.loadData();
                 },
-                showDialogAdd(e) {
-                    e.preventDefault();
+                showDialogAdd() {
                     this.showDialog({
                         title: 'New Bookmark',
                         content: 'Create a new bookmark',
@@ -681,6 +711,9 @@
                         }
                     });
                 },
+                showDialogAbout() {
+                    this.dialogAbout.visible = true;
+                },
                 showDialogOptions() {
                     this.dialogOptions.visible = true;
                 },
@@ -688,17 +721,31 @@
                     parser = document.createElement('a');
                     parser.href = url;
                     return parser.hostname.replace(/^www\./g, '');
+                },
+                getBookLink(book, isMainLink) {
+                    if ((this.options.mainOpenOriginal && isMainLink) ||
+                        (!this.options.mainOpenOriginal && !isMainLink)) return book.url;
+                    if (book.hasContent) return '/bookmark/' + book.id;
+                    return null;
+                },
+                getBookLinkTitle(book, isMainLink) {
+                    if ((this.options.mainOpenOriginal && isMainLink) ||
+                        (!this.options.mainOpenOriginal && !isMainLink)) return 'View original';
+                    if (book.hasContent) return 'View cache';
+                    return null;
                 }
             },
             mounted() {
                 // Read config from local storage
                 var listView = localStorage.getItem('shiori-list-view'),
                     nightMode = localStorage.getItem('shiori-night-mode'),
-                    showBookmarkID = localStorage.getItem('shiori-show-id');
+                    showBookmarkID = localStorage.getItem('shiori-show-id'),
+                    mainOpenOriginal = localStorage.getItem('shiori-main-original');
 
                 this.options.listView = listView === '1';
                 this.options.nightMode = nightMode === '1';
                 this.options.showBookmarkID = showBookmarkID === '1';
+                this.options.mainOpenOriginal = mainOpenOriginal === '1';
 
                 // Create bookmarklet
                 var shioriURL = location.href.replace(/\/+$/g, ''),
